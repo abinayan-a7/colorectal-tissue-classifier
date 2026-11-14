@@ -1,0 +1,39 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# Datasets and Local Cache
+data/
+datasets/
+*.zip
+cms_eval_data.zip
+base_64.txt
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Operating System & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Distribution / Packaging
+build/
+dist/
+*.egg-info/
+
+# Logs & profiling
+*.log
+mlruns/
+lightning_logs/
+wandb/
