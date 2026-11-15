@@ -4,7 +4,7 @@
 [![PyTorch 2.x](https://img.shields.io/badge/PyTorch-2.x-EE4C2C.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Parameters](https://img.shields.io/badge/Parameters-308k-blueviolet.svg)]()
-[![Colab Notebook](https://img.shields.io/badge/Open%20in%20Colab-F9AB00?logo=googlecolab&logoColor=white)](https://colab.research.google.com/github/<your-username>/histocnn-colorectal-classifier/blob/main/notebooks/colab_training.ipynb)
+[![Colab Notebook](https://img.shields.io/badge/Open%20in%20Colab-F9AB00?logo=googlecolab&logoColor=white)](https://colab.research.google.com/github/abinayan-a7/colorectal-tissue-classifier/blob/main/notebooks/colab_training.ipynb)
 
 A PyTorch project implementing **HistoCNN** — a custom 4-block Convolutional Neural Network built from scratch to classify colorectal cancer histopathology image patches into 9 tissue categories.
 
@@ -89,7 +89,7 @@ Evaluated on the 1,350-image validation split using [`weights/histocnn_best.pth`
 ## Project Structure
 
 ```text
-histocnn-colorectal-classifier/
+colorectal-tissue-classifier/
 ├── assets/
 │   ├── confusion_matrix.png # Validation confusion matrix heatmap
 │   └── sample_patches.png   # 3x3 sample grid of the 9 tissue classes
@@ -119,8 +119,8 @@ histocnn-colorectal-classifier/
 
 ### 1. Setup
 ```bash
-git clone https://github.com/<your-username>/histocnn-colorectal-classifier.git
-cd histocnn-colorectal-classifier
+git clone https://github.com/abinayan-a7/colorectal-tissue-classifier.git
+cd colorectal-tissue-classifier
 
 python3 -m venv .venv
 source .venv/bin/activate
