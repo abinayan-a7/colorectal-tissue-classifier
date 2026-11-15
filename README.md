@@ -23,7 +23,7 @@ This project uses a balanced 9,000 image subset (1,000 patches per class, $64 \t
 | `4` | **MUC** | Mucus | Extracellular mucin pools |
 | `5` | **MUS** | Smooth Muscle | Smooth muscle tissue layers |
 | `6` | **NORM** | Normal Mucosa | Healthy colon crypts and epithelium |
-| `7` | **STR** | Stroma | Cancer-associated connective tissue |
+| `7` | **STR** | Stroma | Cancer associated connective tissue |
 | `8` | **TUM** | Tumor | Colorectal adenocarcinoma epithelium |
 
 <p align="center">
@@ -34,7 +34,7 @@ This project uses a balanced 9,000 image subset (1,000 patches per class, $64 \t
 
 ## Model Architecture
 
-Instead of fine-tuning a large pretrained network like ResNet-50, **HistoCNN** is trained from scratch with 4 convolutional blocks and a lightweight classifier head:
+Instead of fine tuning a large pretrained network like ResNet-50, **HistoCNN** is trained from scratch with 4 convolutional blocks and a lightweight classifier head:
 
 - **Total Trainable Parameters:** 308,361 (`1.19 MB` checkpoint)
 - **Data Augmentation:** Random horizontal and vertical flips ($p=0.5$)
@@ -60,7 +60,7 @@ Output Logits: (N, 9)
 
 ## Results
 
-Evaluated on the 1,350-image validation split using [`weights/histocnn_best.pth`](weights/histocnn_best.pth):
+Evaluated on the 1,350 image validation split using [`weights/histocnn_best.pth`](weights/histocnn_best.pth):
 
 | Metric | Score |
 |:---|:---:|
