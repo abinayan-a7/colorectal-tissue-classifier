@@ -6,7 +6,7 @@
 [![Parameters](https://img.shields.io/badge/Parameters-308k-blueviolet.svg)]()
 [![Colab Notebook](https://img.shields.io/badge/Open%20in%20Colab-F9AB00?logo=googlecolab&logoColor=white)](https://colab.research.google.com/github/abinayan-a7/colorectal-tissue-classifier/blob/main/notebooks/colab_training.ipynb)
 
-A PyTorch project implementing **HistoCNN** — a custom 4-block Convolutional Neural Network built from scratch to classify colorectal cancer histopathology image patches into 9 tissue categories.
+A PyTorch project implementing **HistoCNN**, a custom 4-block Convolutional Neural Network built from scratch to classify colorectal cancer histopathology image patches into 9 tissue categories.
 
 ---
 
