@@ -1,152 +1,123 @@
-# HistoCNN: Lightweight Colorectal Cancer Histopathology Classifier
+# HistoCNN: Colorectal Histopathology Tissue Classifier
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![PyTorch 2.x](https://img.shields.io/badge/PyTorch-2.x-EE4C2C.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Model Size](https://img.shields.io/badge/Model%20Size-1.19%20MB-brightgreen.svg)]()
 [![Parameters](https://img.shields.io/badge/Parameters-308k-blueviolet.svg)]()
-[![Colab Notebook](https://img.shields.io/badge/Open%20in%20Colab-F9AB00?logo=googlecolab&logoColor=white)](notebooks/colab_training.ipynb)
+[![Colab Notebook](https://img.shields.io/badge/Open%20in%20Colab-F9AB00?logo=googlecolab&logoColor=white)](https://colab.research.google.com/github/<your-username>/histocnn-colorectal-classifier/blob/main/notebooks/colab_training.ipynb)
 
-A modular, production-ready PyTorch deep learning repository implementing **HistoCNN** — a lightweight custom 4-block Convolutional Neural Network built completely from scratch for automated 9-class tissue phenotype classification on Hematoxylin and Eosin (H&E) stained colorectal adenocarcinoma histopathology patches.
-
----
-
-## Table of Contents
-- [Clinical Motivation & Dataset](#clinical-motivation--dataset)
-- [Tissue Phenotype Classes](#tissue-phenotype-classes)
-- [Architectural Design & Efficiency](#architectural-design--efficiency)
-- [Validation Results & Benchmarks](#validation-results--benchmarks)
-- [Repository Structure](#repository-structure)
-- [Quickstart Guide](#quickstart-guide)
-  - [1. Installation](#1-installation)
-  - [2. Pretrained Model Evaluation](#2-pretrained-model-evaluation)
-  - [3. Training from Scratch](#3-training-from-scratch)
-  - [4. Visualizing Results](#4-visualizing-results)
-  - [5. Google Colab Training](#5-google-colab-training)
-- [Citation & References](#citation--references)
-- [License](#license)
+A PyTorch project implementing **HistoCNN** — a custom 4-block Convolutional Neural Network built from scratch to classify colorectal cancer histopathology image patches into 9 tissue categories.
 
 ---
 
-## Clinical Motivation & Dataset
+## Dataset & Tissue Classes
 
-Colorectal cancer (CRC) is among the leading causes of cancer-related mortality globally. Comprehensive histological assessment of Whole Slide Images (WSIs) enables diagnostic staging, prognostic biomarker extraction, and therapeutic planning. However, manual examination across gigapixel digital pathology slides is labor-intensive and prone to inter-observer variability.
+This project uses a balanced 9,000-image subset (1,000 patches per class, $64 \times 64$ RGB) streamed from the **NCT-CRC-HE** dataset (`1aurent/NCT-CRC-HE`), split 85% for training (7,650 patches) and 15% for validation (1,350 patches).
 
-This project trains and benchmarks **HistoCNN** on the **NCT-CRC-HE** dataset (Kather et al.), comprising formalin-fixed paraffin-embedded (FFPE) histological image patches extracted at $0.5\,\mu\text{m/pixel}$ resolution ($64 \times 64$ RGB patches normalized for computational efficiency).
-
-### Tissue Phenotype Classes
-
-The model classifies tissue patches across nine histological phenotypes:
-
-| Index | Label | Tissue Class | Histological & Clinical Significance |
+| Index | Code | Tissue Class | Description |
 |:---:|:---:|:---|:---|
-| `0` | **ADI** | Adipose Tissue | Non-tumorous fat cells; low density, lipid vacuole dominant |
-| `1` | **BACK** | Background | Empty slide background / glass area without tissue |
-| `2` | **DEB** | Debris | Necrotic tissue fragments, apoptotic cellular debris, micro-hemorrhage |
-| `3` | **LYM** | Lymphocytes | Dense mononuclear inflammatory infiltrate; prognostic immune indicator |
-| `4` | **MUC** | Mucus | Extracellular mucin pools; characteristic of mucinous adenocarcinomas |
-| `5` | **MUS** | Smooth Muscle | Smooth muscle tissue layers (muscularis mucosae and muscularis propria) |
-| `6` | **NORM** | Normal Mucosa | Non-neoplastic, organized colonic crypts and glandular epithelium |
-| `7` | **STR** | Stroma | Desmoplastic cancer-associated stroma and extracellular matrix |
-| `8` | **TUM** | Epithelium / Tumor | High-grade colorectal adenocarcinoma epithelial cells |
+| `0` | **ADI** | Adipose | Fat tissue cells |
+| `1` | **BACK** | Background | Empty slide background |
+| `2` | **DEB** | Debris | Necrotic tissue fragments and cellular debris |
+| `3` | **LYM** | Lymphocytes | Immune / inflammatory cell clusters |
+| `4` | **MUC** | Mucus | Extracellular mucin pools |
+| `5` | **MUS** | Smooth Muscle | Smooth muscle tissue layers |
+| `6` | **NORM** | Normal Mucosa | Healthy colon crypts and epithelium |
+| `7` | **STR** | Stroma | Cancer-associated connective tissue |
+| `8` | **TUM** | Tumor | Colorectal adenocarcinoma epithelium |
+
+<p align="center">
+  <img src="assets/sample_patches.png" alt="NCT-CRC-HE 9 Tissue Classes" width="750"/>
+</p>
 
 ---
 
-## Architectural Design & Efficiency
+## Model Architecture
 
-Standard computer vision backbones (e.g., ResNet-50 with 25.6M parameters or VGG-16 with 138M parameters) impose substantial compute and memory overheads, making edge pathology deployments and high-throughput slide tiling difficult. 
+Instead of fine-tuning a large pretrained network like ResNet-50, **HistoCNN** is trained from scratch with 4 convolutional blocks and a lightweight classifier head:
 
-**HistoCNN** was engineered specifically for patch-level histopathology classification:
-- **Parameter Efficiency**: Only **308,361 trainable parameters** ($1.19\,\text{MB}$ checkpoint size) — over **$80\times$ smaller than ResNet-50**.
-- **Funnel Topology**: 4 progressive convolutional stages expanding channel capacity ($3 \to 32 \to 64 \to 128 \to 128$) while reducing spatial dimensions with MaxPool and AdaptiveAvgPool.
-- **Regularization & Stability**: Batch Normalization after every convolution stabilizes internal covariate shifts; spatial dropout ($p=0.3$) and data augmentations (random horizontal and vertical flips) prevent overfitting.
+- **Total Trainable Parameters:** 308,361 (`1.19 MB` checkpoint)
+- **Data Augmentation:** Random horizontal and vertical flips ($p=0.5$)
+- **Optimizer & Loss:** AdamW ($\text{lr}=10^{-3}$, weight decay $=10^{-4}$) with Cross-Entropy Loss
 
-```
+```text
 Input Patch: (3, 64, 64)
     │
-    ├── [Conv2d(3, 32, 3, p=1) -> BatchNorm2d -> ReLU -> MaxPool2d(2, 2)]        => (32, 32, 32)
-    ├── [Conv2d(32, 64, 3, p=1) -> BatchNorm2d -> ReLU -> MaxPool2d(2, 2)]       => (64, 16, 16)
-    ├── [Conv2d(64, 128, 3, p=1) -> BatchNorm2d -> ReLU -> MaxPool2d(2, 2)]      => (128, 8, 8)
-    ├── [Conv2d(128, 128, 3, p=1) -> BatchNorm2d -> ReLU -> AdaptiveAvgPool(2,2)] => (128, 2, 2)
+    ├── Block 1: Conv2d(3 -> 32, 3x3, pad=1) -> BatchNorm2d -> ReLU -> MaxPool2d(2, 2)        => (32, 32, 32)
+    ├── Block 2: Conv2d(32 -> 64, 3x3, pad=1) -> BatchNorm2d -> ReLU -> MaxPool2d(2, 2)       => (64, 16, 16)
+    ├── Block 3: Conv2d(64 -> 128, 3x3, pad=1) -> BatchNorm2d -> ReLU -> MaxPool2d(2, 2)      => (128, 8, 8)
+    ├── Block 4: Conv2d(128 -> 128, 3x3, pad=1) -> BatchNorm2d -> ReLU -> AdaptiveAvgPool(2,2)=> (128, 2, 2)
     │
 Flatten: 128 * 2 * 2 = 512 features
     │
-    ├── [Linear(512, 128) -> ReLU -> Dropout(p=0.3)]
-    └── [Linear(128, 9)]
+    ├── Linear(512 -> 128) -> ReLU -> Dropout(p=0.3)
+    └── Linear(128 -> 9)
     │
 Output Logits: (N, 9)
 ```
 
 ---
 
-## Validation Results & Benchmarks
+## Results
 
-The trained model checkpoint stored in [`weights/histocnn_best.pth`](weights/histocnn_best.pth) demonstrates high sensitivity and precision across tissue phenotypes:
+Evaluated on the 1,350-image validation split using [`weights/histocnn_best.pth`](weights/histocnn_best.pth):
 
-### Summary Performance
-| Metric | Value |
+| Metric | Score |
 |:---|:---:|
-| **Overall Validation Accuracy** | **88.44%** |
-| **Macro-Averaged Recall** | **88.17%** |
-| **Trainable Parameters** | **308,361** |
-| **Model Size on Disk** | **1.19 MB** |
-| **Inference Latency (CPU)** | **< 1.8 ms / patch** |
+| **Validation Accuracy** | **88.44%** |
+| **Macro Recall** | **88.17%** |
 
-### Per-Class Sensitivity (Recall)
-| Class | Sensitivity / Recall | Correct / Total | Primary Confusion Pattern |
-|:---|:---:|:---:|:---|
-| **ADI** | **94.67%** | 142 / 150 | Minor confusion with MUC (clear extracellular appearance) |
-| **BACK** | **100.00%** | 150 / 150 | Perfect separation from all cellular tissue |
-| **DEB** | **84.00%** | 126 / 150 | Overlaps slightly with desmoplastic stroma and mucus |
-| **LYM** | **91.33%** | 137 / 150 | Sharp detection of concentrated nuclear chromatin |
-| **MUC** | **86.00%** | 129 / 150 | Occasional overlap with amorphous debris |
-| **MUS** | **87.33%** | 131 / 150 | Minor cross-prediction with spindle-cell stroma |
-| **NORM** | **90.00%** | 135 / 150 | High fidelity separation from invasive tumor epithelium |
-| **STR** | **80.67%** | 121 / 150 | Occasional overlap with debris and smooth muscle bundles |
-| **TUM** | **89.33%** | 134 / 150 | Robust identification of neoplastic colon glands |
-
-### Confusion Matrix Heatmap
-The normalized confusion matrix illustrates clean diagonal discrimination across all nine tissue classes:
+### Per-Class Recall
+| Class | Recall | Correct / Total |
+|:---|:---:|:---:|
+| **ADI** | 94.67% | 142 / 150 |
+| **BACK** | 100.00% | 150 / 150 |
+| **DEB** | 84.00% | 126 / 150 |
+| **LYM** | 91.33% | 137 / 150 |
+| **MUC** | 86.00% | 129 / 150 |
+| **MUS** | 87.33% | 131 / 150 |
+| **NORM** | 90.00% | 135 / 150 |
+| **STR** | 80.67% | 121 / 150 |
+| **TUM** | 89.33% | 134 / 150 |
 
 <p align="center">
-  <img src="assets/confusion_matrix.png" alt="HistoCNN Colorectal Cancer Confusion Matrix" width="850"/>
+  <img src="assets/confusion_matrix.png" alt="HistoCNN Confusion Matrix" width="800"/>
 </p>
 
 ---
 
-## Repository Structure
+## Project Structure
 
-```
+```text
 histocnn-colorectal-classifier/
-├── src/
-│   ├── __init__.py          # Module exports
-│   ├── model.py             # Custom HistoCNN PyTorch architecture (~308k params)
-│   ├── dataset.py           # Preprocessing transforms, HF streaming & DataLoader utilities
-│   ├── train.py             # AdamW training loop with best validation checkpointing
-│   └── evaluate.py          # Inference, classification report, and weight loader
-├── scripts/
-│   ├── extract_weights.py   # Base64/zlib extraction & FP16->FP32 tensor decoder
-│   └── plot_results.py      # Publication-quality confusion matrix heatmap generator
-├── weights/
-│   └── histocnn_best.pth    # Clean pretrained FP32 PyTorch state_dict (1.19 MB)
 ├── assets/
-│   └── confusion_matrix.png # High-resolution (300 DPI) confusion matrix heatmap
+│   ├── confusion_matrix.png # Validation confusion matrix heatmap
+│   └── sample_patches.png   # 3x3 sample grid of the 9 tissue classes
 ├── notebooks/
-│   └── colab_training.ipynb # Clean Google Colab GPU notebook for end-to-end training
-├── .gitignore               # Ignores __pycache__, checkpoints, data, venvs
-├── LICENSE                  # MIT Open Source License
-├── requirements.txt         # Minimum reproducible Python dependencies
-└── README.md                # Comprehensive portfolio documentation
+│   └── colab_training.ipynb # Google Colab notebook used for GPU training
+├── scripts/
+│   ├── __init__.py
+│   ├── plot_results.py      # Generates the confusion matrix plot
+│   └── plot_samples.py      # Generates the 3x3 sample patch grid
+├── src/
+│   ├── __init__.py
+│   ├── dataset.py           # Transforms, Hugging Face streaming, and DataLoaders
+│   ├── evaluate.py          # Inference and evaluation metrics
+│   ├── model.py             # HistoCNN architecture
+│   └── train.py             # Training loop and checkpoint saving
+├── weights/
+│   └── histocnn_best.pth    # Trained model weights (1.19 MB)
+├── .gitignore
+├── LICENSE
+├── requirements.txt
+└── README.md
 ```
 
 ---
 
-## Quickstart Guide
+## How to Run
 
-### 1. Installation
-
-Clone this repository and set up a virtual environment:
-
+### 1. Setup
 ```bash
 git clone https://github.com/<your-username>/histocnn-colorectal-classifier.git
 cd histocnn-colorectal-classifier
@@ -156,51 +127,24 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Pretrained Model Evaluation
-
-Evaluate the included checkpoint (`weights/histocnn_best.pth`) directly:
-
+### 2. Evaluate Pretrained Weights
 ```bash
-# If using a local ImageFolder directory (with train/ and validation/ subdirectories):
-python -m src.evaluate --weights weights/histocnn_best.pth --data-dir path/to/dataset
-
-# Or stream the balanced validation subset automatically from Hugging Face:
 python -m src.evaluate --weights weights/histocnn_best.pth
 ```
 
-### 3. Training from Scratch
-
-Train a new HistoCNN model using the standard hyperparameters (AdamW, $\text{lr}=10^{-3}$, weight decay $=10^{-4}$, 12 epochs):
-
+### 3. Train from Scratch
 ```bash
 python -m src.train --epochs 12 --batch-size 32 --lr 0.001 --save-path weights/histocnn_custom.pth
 ```
 
-### 4. Visualizing Results
-
-Generate a publication-grade confusion matrix heatmap:
-
+### 4. Generate Plots
 ```bash
-python scripts/plot_results.py --save-path assets/confusion_matrix.png
+python -m scripts.plot_samples --save-path assets/sample_patches.png
+python -m scripts.plot_results --save-path assets/confusion_matrix.png
 ```
 
-### 5. Google Colab Training
-
-To run the complete workflow on a cloud GPU (NVIDIA T4):
-1. Open [`notebooks/colab_training.ipynb`](notebooks/colab_training.ipynb) in Google Colab.
-2. Select **Runtime > Change runtime type > T4 GPU**.
-3. Run all cells sequentially to stream the dataset, train in ~3 minutes, evaluate, and download the `.pth` weights.
-
 ---
 
-## Citation & References
-
-1. **Kather, J. N., et al.** (2019). *Predicting survival from colorectal cancer histology slides using deep learning: A retrospective multicenter study.* PLOS Medicine, 16(1), e1002730. [doi:10.1371/journal.pmed.1002730](https://doi.org/10.1371/journal.pmed.1002730).
-2. **Kather, J. N., et al.** (2016). *Multi-class texture analysis in colorectal cancer histology.* Scientific Reports, 6, 27988. [doi:10.1038/srep27988](https://doi.org/10.1371/nature/srep27988).
-3. Hugging Face Dataset: [`1aurent/NCT-CRC-HE`](https://huggingface.co/datasets/1aurent/NCT-CRC-HE).
-
----
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
+## References
+- **Dataset:** Kather, J. N., et al. (2018). *100,000 histological images of human colorectal cancer and healthy tissue.* Zenodo / Hugging Face (`1aurent/NCT-CRC-HE`).
+- **License:** [MIT License](LICENSE)

@@ -111,8 +111,18 @@ def plot_confusion_matrix(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate Confusion Matrix Heatmap for HistoCNN")
-    parser.add_argument("--weights", type=str, default=str(REPO_ROOT / "weights" / "histocnn_best.pth"))
-    parser.add_argument("--save-path", type=str, default=str(REPO_ROOT / "assets" / "confusion_matrix.png"))
+    parser.add_argument(
+        "--weights",
+        type=str,
+        default=str(REPO_ROOT / "weights" / "histocnn_best.pth"),
+        help="Path to model weights",
+    )
+    parser.add_argument(
+        "--save-path",
+        type=str,
+        default=str(REPO_ROOT / "assets" / "confusion_matrix.png"),
+        help="Path to save confusion matrix",
+    )
     parser.add_argument("--eval-live", action="store_true", help="Stream live validation data from Hugging Face")
     parser.add_argument("--data-dir", type=str, default=None, help="Local directory with validation data")
     args = parser.parse_args()
