@@ -12,7 +12,7 @@ A PyTorch project implementing **HistoCNN**, a custom 4-block Convolutional Neur
 
 ## Dataset & Tissue Classes
 
-This project uses a balanced 9,000-image subset (1,000 patches per class, $64 \times 64$ RGB) streamed from the **NCT-CRC-HE** dataset (`1aurent/NCT-CRC-HE`), split 85% for training (7,650 patches) and 15% for validation (1,350 patches).
+This project uses a balanced 9,000 image subset (1,000 patches per class, $64 \times 64$ RGB) streamed from the **NCT-CRC-HE** dataset (`1aurent/NCT-CRC-HE`), split 85% for training (7,650 patches) and 15% for validation (1,350 patches).
 
 | Index | Code | Tissue Class | Description |
 |:---:|:---:|:---|:---|
