@@ -1,4 +1,4 @@
-"""Data loading and preprocessing pipelines for NCT-CRC-HE histopathology patches."""
+"""Data loading and preprocessing pipelines"""
 
 import os
 import random
