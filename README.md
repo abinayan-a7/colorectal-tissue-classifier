@@ -2,6 +2,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![PyTorch 2.x](https://img.shields.io/badge/PyTorch-2.x-EE4C2C.svg)](https://pytorch.org/)
+[![MLflow](https://img.shields.io/badge/MLflow-Tracking-0194E2.svg?logo=mlflow&logoColor=white)](https://mlflow.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Colab Notebook](https://img.shields.io/badge/Open%20in%20Colab-F9AB00?logo=googlecolab&logoColor=white)](https://colab.research.google.com/github/abinayan-a7/colorectal-tissue-classifier/blob/main/notebooks/colab_training.ipynb)
 
@@ -33,11 +34,12 @@ This project uses a balanced 9,000 image subset (1,000 patches per class, $64 \t
 
 ## Model Architecture
 
-Instead of fine tuning a large pretrained network like ResNet-50, **HistoCNN** is trained from scratch with 4 convolutional blocks and a lightweight classifier head:
+Instead of fine tuning a large pretrained network like ResNet-50, **HistoCNN** is trained from scratch with 4 convolutional blocks and a lightweight dual-dropout classifier head:
 
 - **Total Trainable Parameters:** 308,361 (`1.19 MB` checkpoint)
 - **Data Augmentation:** Random horizontal and vertical flips ($p=0.5$)
-- **Optimizer & Loss:** AdamW ($\text{lr}=10^{-3}$, weight decay $=10^{-4}$) with Cross-Entropy Loss
+- **Optimizer & Loss:** AdamW ($\text{weight decay}=10^{-4}$) with Cross-Entropy Loss
+- **Classifier Regularization:** Dual spatial dropout ($p=0.4$ on input features, $p=0.2$ on hidden layer)
 
 ```text
 Input Patch: (3, 64, 64)
@@ -49,11 +51,27 @@ Input Patch: (3, 64, 64)
     │
 Flatten: 128 * 2 * 2 = 512 features
     │
-    ├── Linear(512 -> 128) -> ReLU -> Dropout(p=0.3)
+    ├── Dropout(p=0.4)
+    ├── Linear(512 -> 128) -> ReLU -> Dropout(p=0.2)
     └── Linear(128 -> 9)
     │
 Output Logits: (N, 9)
 ```
+
+---
+
+## MLflow Hyperparameter Tuning
+
+Hyperparameter optimization was tracked across multi-run experiments using **MLflow** in Google Colab (`came_assignment_02_tuning`):
+
+| Run Name | Learning Rate | Epochs | Batch Size | LR Scheduler | Status |
+|:---|:---:|:---:|:---:|:---:|:---:|
+| `run_baseline_lr1e3_ep12_bs32` | $1.0 \times 10^{-3}$ | 12 | 32 | Constant | Baseline |
+| `run_cosine_lr1e3_ep16_bs32` | $1.0 \times 10^{-3}$ | 16 | 32 | Cosine Annealing | Candidate |
+| `run_cosine_lr7e4_ep18_bs32` | $7.0 \times 10^{-4}$ | 18 | 32 | Cosine Annealing | Candidate |
+| **`run_bs64_lr12e3_ep16`** | **$1.2 \times 10^{-3}$** | **16** | **64** | **Cosine Annealing** | 🏆 **Winning Checkpoint** |
+
+> **Winning Strategy (`run_bs64_lr12e3_ep16`)**: Scaling batch size to 64 combined with Cosine Annealing LR scheduling ($\text{lr}=1.2 \times 10^{-3}$, 16 epochs) produced smoother gradient steps and the highest validation macro recall.
 
 ---
 
@@ -93,7 +111,7 @@ colorectal-tissue-classifier/
 │   ├── confusion_matrix.png # Validation confusion matrix heatmap
 │   └── sample_patches.png   # 3x3 sample grid of the 9 tissue classes
 ├── notebooks/
-│   └── colab_training.ipynb # Google Colab notebook used for GPU training
+│   └── colab_training.ipynb # Google Colab notebook with MLflow multi-run sweep
 ├── scripts/
 │   ├── __init__.py
 │   ├── plot_results.py      # Generates the confusion matrix plot
@@ -102,10 +120,10 @@ colorectal-tissue-classifier/
 │   ├── __init__.py
 │   ├── dataset.py           # Transforms, Hugging Face streaming, and DataLoaders
 │   ├── evaluate.py          # Inference and evaluation metrics
-│   ├── model.py             # HistoCNN architecture
-│   └── train.py             # Training loop and checkpoint saving
+│   ├── model.py             # HistoCNN architecture (dual-dropout head)
+│   └── train.py             # Training loop with CosineAnnealingLR and checkpointing
 ├── weights/
-│   └── histocnn_best.pth    # Trained model weights (1.19 MB)
+│   └── histocnn_best.pth    # Trained winning model weights (1.19 MB)
 ├── .gitignore
 ├── LICENSE
 ├── requirements.txt
@@ -133,7 +151,7 @@ python -m src.evaluate --weights weights/histocnn_best.pth
 
 ### 3. Train from Scratch
 ```bash
-python -m src.train --epochs 12 --batch-size 32 --lr 0.001 --save-path weights/histocnn_custom.pth
+python -m src.train --epochs 16 --batch-size 64 --lr 0.0012 --use-cosine-lr --save-path weights/histocnn_custom.pth
 ```
 
 ### 4. Generate Plots

@@ -2,6 +2,13 @@
 
 import argparse
 import sys
+from pathlib import Path
+
+# Add project root to sys.path if invoked directly
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import torch
 from src.dataset import build_datasets, make_loaders, official_classes
 from src.model import build_model
