@@ -69,7 +69,7 @@ Hyperparameter optimization was tracked across multi-run experiments using **MLf
 | `run_baseline_lr1e3_ep12_bs32` | $1.0 \times 10^{-3}$ | 12 | 32 | Constant | Baseline |
 | `run_cosine_lr1e3_ep16_bs32` | $1.0 \times 10^{-3}$ | 16 | 32 | Cosine Annealing | Candidate |
 | `run_cosine_lr7e4_ep18_bs32` | $7.0 \times 10^{-4}$ | 18 | 32 | Cosine Annealing | Candidate |
-| **`run_bs64_lr12e3_ep16`** | **$1.2 \times 10^{-3}$** | **16** | **64** | **Cosine Annealing** | 🏆 **Winning Checkpoint** |
+| **`run_bs64_lr12e3_ep16`** | **$1.2 \times 10^{-3}$** | **16** | **64** | **Cosine Annealing** | **Best** |
 
 > **Winning Strategy (`run_bs64_lr12e3_ep16`)**: Scaling batch size to 64 combined with Cosine Annealing LR scheduling ($\text{lr}=1.2 \times 10^{-3}$, 16 epochs) produced smoother gradient steps and the highest validation macro recall.
 
