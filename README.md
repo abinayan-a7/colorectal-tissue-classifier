@@ -34,12 +34,11 @@ This project uses a balanced 9,000 image subset (1,000 patches per class, $64 \t
 
 ## Model Architecture
 
-Instead of fine tuning a large pretrained network like ResNet-50, **HistoCNN** is trained from scratch with 4 convolutional blocks and a lightweight dual-dropout classifier head:
+Instead of fine tuning a large pretrained network like ResNet-50, **HistoCNN** is trained from scratch with 4 convolutional blocks and a lightweight classifier head:
 
 - **Total Trainable Parameters:** 308,361 (`1.19 MB` checkpoint)
 - **Data Augmentation:** Random horizontal and vertical flips ($p=0.5$)
 - **Optimizer & Loss:** AdamW ($\text{weight decay}=10^{-4}$) with Cross-Entropy Loss
-- **Classifier Regularization:** Dual spatial dropout ($p=0.4$ on input features, $p=0.2$ on hidden layer)
 
 ```text
 Input Patch: (3, 64, 64)
@@ -51,8 +50,7 @@ Input Patch: (3, 64, 64)
     │
 Flatten: 128 * 2 * 2 = 512 features
     │
-    ├── Dropout(p=0.4)
-    ├── Linear(512 -> 128) -> ReLU -> Dropout(p=0.2)
+    ├── Linear(512 -> 128) -> ReLU -> Dropout(p=0.3)
     └── Linear(128 -> 9)
     │
 Output Logits: (N, 9)
@@ -81,21 +79,21 @@ Evaluated on the 1,350 image validation split using [`weights/histocnn_best.pth`
 
 | Metric | Score |
 |:---|:---:|
-| **Validation Accuracy** | **88.44%** |
-| **Macro Recall** | **88.17%** |
+| **Validation Accuracy** | **94.30%** |
+| **Macro Recall** | **94.25%** |
 
 ### Per-Class Recall
 | Class | Recall | Correct / Total |
 |:---|:---:|:---:|
-| **ADI** | 94.67% | 142 / 150 |
-| **BACK** | 100.00% | 150 / 150 |
-| **DEB** | 84.00% | 126 / 150 |
-| **LYM** | 91.33% | 137 / 150 |
-| **MUC** | 86.00% | 129 / 150 |
-| **MUS** | 87.33% | 131 / 150 |
-| **NORM** | 90.00% | 135 / 150 |
-| **STR** | 80.67% | 121 / 150 |
-| **TUM** | 89.33% | 134 / 150 |
+| **ADI** | 98.58% | 139 / 141 |
+| **BACK** | 99.38% | 161 / 162 |
+| **DEB** | 86.76% | 118 / 136 |
+| **LYM** | 98.12% | 157 / 160 |
+| **MUC** | 91.67% | 143 / 156 |
+| **MUS** | 94.59% | 140 / 148 |
+| **NORM** | 97.22% | 140 / 144 |
+| **STR** | 86.79% | 138 / 159 |
+| **TUM** | 95.14% | 137 / 144 |
 
 <p align="center">
   <img src="assets/confusion_matrix.png" alt="HistoCNN Confusion Matrix" width="800"/>
@@ -120,7 +118,7 @@ colorectal-tissue-classifier/
 │   ├── __init__.py
 │   ├── dataset.py           # Transforms, Hugging Face streaming, and DataLoaders
 │   ├── evaluate.py          # Inference and evaluation metrics
-│   ├── model.py             # HistoCNN architecture (dual-dropout head)
+│   ├── model.py             # HistoCNN architecture
 │   └── train.py             # Training loop with CosineAnnealingLR and checkpointing
 ├── weights/
 │   └── histocnn_best.pth    # Trained winning model weights (1.19 MB)

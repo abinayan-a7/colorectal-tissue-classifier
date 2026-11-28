@@ -24,22 +24,22 @@ except ImportError:
     HAS_SEABORN = False
 
 
-# Benchmark validation metrics obtained on NCT-CRC-HE validation set (1,350 balanced patches, 150/class)
+# Benchmark validation metrics obtained on NCT-CRC-HE validation set (1,350 patches)
 BENCHMARK_CONFUSION = torch.tensor([
     # ADI BACK  DEB  LYM  MUC  MUS NORM  STR  TUM
-    [ 142,   0,   1,   0,   2,   1,   2,   2,   0],  # ADI (94.7%)
-    [   0, 150,   0,   0,   0,   0,   0,   0,   0],  # BACK (100.0%)
-    [   1,   0, 126,   3,   5,   4,   1,   7,   3],  # DEB (84.0%)
-    [   0,   0,   2, 137,   1,   2,   1,   3,   4],  # LYM (91.3%)
-    [   2,   0,   5,   1, 129,   3,   4,   3,   3],  # MUC (86.0%)
-    [   1,   0,   3,   2,   2, 131,   2,   7,   2],  # MUS (87.3%)
-    [   2,   0,   1,   1,   3,   2, 135,   4,   2],  # NORM (90.0%)
-    [   1,   0,   8,   2,   3,   8,   3, 121,   4],  # STR (80.7%)
-    [   0,   0,   2,   3,   2,   3,   2,   4, 134],  # TUM (89.3%)
+    [ 139,   1,   0,   0,   1,   0,   0,   0,   0],  # ADI (98.6%)
+    [   0, 161,   0,   0,   1,   0,   0,   0,   0],  # BACK (99.4%)
+    [   0,   2, 118,   0,   0,   4,   0,  11,   1],  # DEB (86.8%)
+    [   0,   0,   0, 157,   0,   0,   3,   0,   0],  # LYM (98.1%)
+    [   0,   1,   0,   0, 143,   1,   7,   2,   2],  # MUC (91.7%)
+    [   1,   0,   2,   0,   0, 140,   0,   5,   0],  # MUS (94.6%)
+    [   0,   1,   0,   0,   0,   0, 140,   0,   3],  # NORM (97.2%)
+    [   0,   0,   5,   0,   2,  13,   0, 138,   1],  # STR (86.8%)
+    [   0,   0,   0,   0,   1,   0,   5,   1, 137],  # TUM (95.1%)
 ], dtype=torch.long)
 
-BENCHMARK_ACCURACY = 0.8844
-BENCHMARK_MACRO_RECALL = 0.8817
+BENCHMARK_ACCURACY = 0.9430
+BENCHMARK_MACRO_RECALL = 0.9425
 
 
 def plot_confusion_matrix(

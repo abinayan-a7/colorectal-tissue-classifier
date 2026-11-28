@@ -12,7 +12,8 @@ class HistoCNN(nn.Module):
       - Block 2: 32 -> 64  channels, MaxPool (32x32 -> 16x16)
       - Block 3: 64 -> 128 channels, MaxPool (16x16 -> 8x8)
       - Block 4: 128 -> 128 channels, AdaptiveAvgPool (8x8 -> 2x2)
-      - Classifier: Flatten -> Dropout(0.4) -> Linear(512, 128) -> ReLU -> Dropout(0.2) -> Linear(128, num_classes)
+      - Classifier: Linear(512, 128) -> ReLU -> Dropout(0.3) -> Linear(128, num_classes)
+      - Classifier: Linear(512, 128) -> ReLU -> Dropout(0.3) -> Linear(128, num_classes)
 
     Outputs raw unnormalized logits of shape (N, num_classes).
     """
@@ -43,10 +44,9 @@ class HistoCNN(nn.Module):
         )
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Dropout(p=0.4),
             nn.Linear(128 * 2 * 2, 128),
             nn.ReLU(),
-            nn.Dropout(p=0.2),
+            nn.Dropout(0.3),
             nn.Linear(128, num_classes),
         )
 
